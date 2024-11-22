@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Equity Value Calculator</title>
+    <title>Equity Value Calculator with Dilution</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
         .center-content {
@@ -20,8 +20,8 @@
     <div class="max-w-4xl mx-auto space-y-6">
         <!-- Header -->
         <div class="bg-white rounded-lg shadow p-6 center-content">
-            <h2 class="text-xl font-bold mb-4">Equity Value Calculator</h2>
-            <p class="text-sm text-gray-600">See the potential financial impact of your equity at various company valuations.</p>
+            <h2 class="text-xl font-bold mb-4">Equity Value Calculator with Dilution</h2>
+            <p class="text-sm text-gray-600">Estimate the impact of your equity at various company valuations, accounting for dilution.</p>
         </div>
 
         <!-- Input Section -->
@@ -49,25 +49,27 @@
             </div>
         </div>
 
-        <!-- Valuations Section -->
+        <!-- Valuations and Dilution Section -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold mb-4">Company Valuation Milestones</h3>
-            <div class="grid grid-cols-4 gap-4">
+            <h3 class="text-lg font-bold mb-4">Company Valuation Milestones and Dilution</h3>
+            <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 1 ($M)</label>
-                    <input type="number" id="valuation-1" class="w-full border rounded p-2" value="1000" oninput="formatAndUpdateEquity('valuation-1')">
+                    <label class="block text-sm font-medium mb-1">Valuation ($M)</label>
+                    <input type="number" id="valuation-1" class="w-full border rounded p-2" value="1000" oninput="updateEquity()">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 2 ($M)</label>
-                    <input type="number" id="valuation-2" class="w-full border rounded p-2" value="3000" oninput="formatAndUpdateEquity('valuation-2')">
+                    <label class="block text-sm font-medium mb-1">Dilution (%)</label>
+                    <input type="number" id="dilution-1" class="w-full border rounded p-2" value="10" oninput="updateEquity()">
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valuation ($M)</label>
+                    <input type="number" id="valuation-2" class="w-full border rounded p-2" value="3000" oninput="updateEquity()">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 3 ($M)</label>
-                    <input type="number" id="valuation-3" class="w-full border rounded p-2" value="7200" oninput="formatAndUpdateEquity('valuation-3')">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 4 ($M)</label>
-                    <input type="number" id="valuation-4" class="w-full border rounded p-2" value="10000" oninput="formatAndUpdateEquity('valuation-4')">
+                    <label class="block text-sm font-medium mb-1">Dilution (%)</label>
+                    <input type="number" id="dilution-2" class="w-full border rounded p-2" value="15" oninput="updateEquity()">
                 </div>
             </div>
         </div>
@@ -90,31 +92,29 @@
             return value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
-        function formatAndUpdateEquity(id) {
-            const input = document.getElementById(id);
-            const value = input.value.replace(/,/g, "");
-            input.value = formatDollar(Number(value) || 0);
-            updateEquity();
-        }
-
         function updateEquity() {
             const totalShares = Number(document.getElementById('total-shares').value.replace(/,/g, ""));
             const yourOptions = Number(document.getElementById('your-options').value.replace(/,/g, ""));
             const strikePrice = parseFloat(document.getElementById('strike-price').value) || 0;
 
-            // Convert valuations from millions to actual dollar values
             const valuations = [
-                Number(document.getElementById('valuation-1').value) * 1e6, // Multiply by 1,000,000
+                Number(document.getElementById('valuation-1').value) * 1e6,
                 Number(document.getElementById('valuation-2').value) * 1e6,
-                Number(document.getElementById('valuation-3').value) * 1e6,
-                Number(document.getElementById('valuation-4').value) * 1e6,
             ];
 
+            const dilutions = [
+                Number(document.getElementById('dilution-1').value) / 100,
+                Number(document.getElementById('dilution-2').value) / 100,
+            ];
+
+            let cumulativeDilution = 1; // Start at 100% ownership
             const resultsContainer = document.getElementById('results-container');
             resultsContainer.innerHTML = "";
 
             valuations.forEach((valuation, index) => {
-                const equityValue = (yourOptions / totalShares) * valuation;
+                cumulativeDilution *= 1 - dilutions[index]; // Apply cumulative dilution
+                const effectiveOwnership = yourOptions / (totalShares * cumulativeDilution);
+                const equityValue = effectiveOwnership * valuation;
                 const costToExercise = yourOptions * strikePrice;
                 const netGain = equityValue - costToExercise;
 
