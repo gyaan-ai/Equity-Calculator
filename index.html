@@ -36,16 +36,16 @@
                     <label class="block text-sm font-medium mb-1">Your Options</label>
                     <input type="text" id="your-options" class="w-full border rounded p-2" value="10000" oninput="formatAndUpdateEquity('your-options')">
                 </div>
-               <div>
-    <label class="block text-sm font-medium mb-1">Strike Price ($)</label>
-    <input 
-        type="number" 
-        id="strike-price" 
-        class="w-full border rounded p-2" 
-        step="0.01" 
-        value="1.00" 
-        oninput="updateEquity()">
-</div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Strike Price ($)</label>
+                    <input 
+                        type="number" 
+                        id="strike-price" 
+                        class="w-full border rounded p-2" 
+                        step="0.01" 
+                        value="1.00" 
+                        oninput="updateEquity()">
+                </div>
             </div>
         </div>
 
@@ -54,20 +54,20 @@
             <h3 class="text-lg font-bold mb-4">Company Valuation Milestones</h3>
             <div class="grid grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 1 ($B)</label>
-                    <input type="text" id="valuation-1" class="w-full border rounded p-2" value="1" oninput="formatAndUpdateEquity('valuation-1')">
+                    <label class="block text-sm font-medium mb-1">Valuation 1 ($M)</label>
+                    <input type="number" id="valuation-1" class="w-full border rounded p-2" value="1000" oninput="formatAndUpdateEquity('valuation-1')">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 2 ($B)</label>
-                    <input type="text" id="valuation-2" class="w-full border rounded p-2" value="3" oninput="formatAndUpdateEquity('valuation-2')">
+                    <label class="block text-sm font-medium mb-1">Valuation 2 ($M)</label>
+                    <input type="number" id="valuation-2" class="w-full border rounded p-2" value="3000" oninput="formatAndUpdateEquity('valuation-2')">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 3 ($B)</label>
-                    <input type="text" id="valuation-3" class="w-full border rounded p-2" value="7.2" oninput="formatAndUpdateEquity('valuation-3')">
+                    <label class="block text-sm font-medium mb-1">Valuation 3 ($M)</label>
+                    <input type="number" id="valuation-3" class="w-full border rounded p-2" value="7200" oninput="formatAndUpdateEquity('valuation-3')">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Valuation 4 ($B)</label>
-                    <input type="text" id="valuation-4" class="w-full border rounded p-2" value="10" oninput="formatAndUpdateEquity('valuation-4')">
+                    <label class="block text-sm font-medium mb-1">Valuation 4 ($M)</label>
+                    <input type="number" id="valuation-4" class="w-full border rounded p-2" value="10000" oninput="formatAndUpdateEquity('valuation-4')">
                 </div>
             </div>
         </div>
@@ -76,7 +76,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-bold mb-4">Your Potential Equity Value</h3>
             <div class="grid grid-cols-4 gap-4 text-center font-bold">
-                <div>Valuation ($B)</div>
+                <div>Valuation ($M)</div>
                 <div>Equity Value ($)</div>
                 <div>Cost to Exercise ($)</div>
                 <div>Net Gain ($)</div>
@@ -100,13 +100,14 @@
         function updateEquity() {
             const totalShares = Number(document.getElementById('total-shares').value.replace(/,/g, ""));
             const yourOptions = Number(document.getElementById('your-options').value.replace(/,/g, ""));
-            const strikePrice = Number(document.getElementById('strike-price').value.replace(/,/g, ""));
+            const strikePrice = parseFloat(document.getElementById('strike-price').value) || 0;
 
+            // Convert valuations from millions to actual dollar values
             const valuations = [
-                Number(document.getElementById('valuation-1').value.replace(/,/g, "")) * 1e9,
-                Number(document.getElementById('valuation-2').value.replace(/,/g, "")) * 1e9,
-                Number(document.getElementById('valuation-3').value.replace(/,/g, "")) * 1e9,
-                Number(document.getElementById('valuation-4').value.replace(/,/g, "")) * 1e9,
+                Number(document.getElementById('valuation-1').value) * 1e6, // Multiply by 1,000,000
+                Number(document.getElementById('valuation-2').value) * 1e6,
+                Number(document.getElementById('valuation-3').value) * 1e6,
+                Number(document.getElementById('valuation-4').value) * 1e6,
             ];
 
             const resultsContainer = document.getElementById('results-container');
@@ -119,7 +120,7 @@
 
                 const resultRow = `
                     <div class="grid grid-cols-4 gap-4 text-center">
-                        <div>${(valuation / 1e9).toFixed(1)}B</div>
+                        <div>${(valuation / 1e6).toFixed(1)}M</div>
                         <div>$${formatDollar(equityValue)}</div>
                         <div>$${formatDollar(costToExercise)}</div>
                         <div>$${formatDollar(netGain)}</div>
