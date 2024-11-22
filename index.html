@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Equity Value Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .center-grid {
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow p-6 center-content">
+            <h2 class="text-xl font-bold mb-4">Equity Value Calculator</h2>
+            <p class="text-sm text-gray-600">See the potential financial impact of your equity at various company valuations.</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4">Enter Your Details</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Total Shares Outstanding</label>
+                    <input type="text" id="total-shares" class="w-full border rounded p-2" value="100000000" oninput="formatAndUpdateEquity('total-shares')">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Your Options</label>
+                    <input type="text" id="your-options" class="w-full border rounded p-2" value="10000" oninput="formatAndUpdateEquity('your-options')">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Strike Price ($)</label>
+                    <input type="text" id="strike-price" class="w-full border rounded p-2" value="1" oninput="formatAndUpdateEquity('strike-price')">
+                </div>
+            </div>
+        </div>
+
+        <!-- Valuations Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4">Company Valuation Milestones</h3>
+            <div class="grid grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valuation 1 ($B)</label>
+                    <input type="text" id="valuation-1" class="w-full border rounded p-2" value="1" oninput="formatAndUpdateEquity('valuation-1')">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valuation 2 ($B)</label>
+                    <input type="text" id="valuation-2" class="w-full border rounded p-2" value="3" oninput="formatAndUpdateEquity('valuation-2')">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valuation 3 ($B)</label>
+                    <input type="text" id="valuation-3" class="w-full border rounded p-2" value="7.2" oninput="formatAndUpdateEquity('valuation-3')">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valuation 4 ($B)</label>
+                    <input type="text" id="valuation-4" class="w-full border rounded p-2" value="10" oninput="formatAndUpdateEquity('valuation-4')">
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-bold mb-4">Your Potential Equity Value</h3>
+            <div class="grid grid-cols-4 gap-4 text-center font-bold">
+                <div>Valuation ($B)</div>
+                <div>Equity Value ($)</div>
+                <div>Cost to Exercise ($)</div>
+                <div>Net Gain ($)</div>
+            </div>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <script>
+        function formatDollar(value) {
+            return value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function formatAndUpdateEquity(id) {
+            const input = document.getElementById(id);
+            const value = input.value.replace(/,/g, "");
+            input.value = formatDollar(Number(value) || 0);
+            updateEquity();
+        }
+
+        function updateEquity() {
+            const totalShares = Number(document.getElementById('total-shares').value.replace(/,/g, ""));
+            const yourOptions = Number(document.getElementById('your-options').value.replace(/,/g, ""));
+            const strikePrice = Number(document.getElementById('strike-price').value.replace(/,/g, ""));
+
+            const valuations = [
+                Number(document.getElementById('valuation-1').value.replace(/,/g, "")) * 1e9,
+                Number(document.getElementById('valuation-2').value.replace(/,/g, "")) * 1e9,
+                Number(document.getElementById('valuation-3').value.replace(/,/g, "")) * 1e9,
+                Number(document.getElementById('valuation-4').value.replace(/,/g, "")) * 1e9,
+            ];
+
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = "";
+
+            valuations.forEach((valuation, index) => {
+                const equityValue = (yourOptions / totalShares) * valuation;
+                const costToExercise = yourOptions * strikePrice;
+                const netGain = equityValue - costToExercise;
+
+                const resultRow = `
+                    <div class="grid grid-cols-4 gap-4 text-center">
+                        <div>${(valuation / 1e9).toFixed(1)}B</div>
+                        <div>$${formatDollar(equityValue)}</div>
+                        <div>$${formatDollar(costToExercise)}</div>
+                        <div>$${formatDollar(netGain)}</div>
+                    </div>
+                `;
+                resultsContainer.innerHTML += resultRow;
+            });
+        }
+
+        updateEquity();
+    </script>
+</body>
+</html>
