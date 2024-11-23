@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Equity Value Calculator with Automatic Total Shares Adjustment</title>
+    <title>Equity Value Calculator</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
         .center-content {
@@ -11,163 +11,73 @@
             justify-content: center;
             text-align: center;
         }
-        .center-grid {
-            text-align: center;
-        }
     </style>
 </head>
 <body class="bg-gray-100 p-6">
-    <div class="max-w-6xl mx-auto space-y-6">
-        <!-- Header -->
+    <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Header Section -->
         <div class="bg-white rounded-lg shadow p-6 center-content">
-            <h2 class="text-xl font-bold mb-4">Equity Value Calculator with Dilution</h2>
-            <p class="text-sm text-gray-600">Estimate the impact of your equity at various company funding rounds, accounting for dilution and adjusting total shares automatically.</p>
+            <h1 class="text-2xl font-bold">Equity Value Calculator</h1>
+            <p class="text-gray-600 mt-2">See the potential value of your equity based on ARR milestones and valuation multiples.</p>
         </div>
 
         <!-- Input Section -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold mb-4">Enter Your Details</h3>
+            <h2 class="text-xl font-bold mb-4">Input Your Details</h2>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Initial Total Shares Outstanding</label>
-                    <input 
-                        type="text" 
-                        id="total-shares" 
-                        class="w-full border rounded p-2" 
-                        value="30,000,000" 
-                        oninput="formatAndUpdateShares('total-shares')">
+                    <label class="block text-sm font-medium mb-1">Annual Recurring Revenue (ARR) ($M)</label>
+                    <input type="number" id="arr" class="w-full border rounded p-2" value="10" oninput="calculateEquity()">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Your Options</label>
-                    <input 
-                        type="text" 
-                        id="your-options" 
-                        class="w-full border rounded p-2" 
-                        value="10,000" 
-                        oninput="formatAndUpdateShares('your-options')">
+                    <label class="block text-sm font-medium mb-1">Your Equity (%)</label>
+                    <input type="number" id="equity" class="w-full border rounded p-2" value="0.5" oninput="calculateEquity()">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Strike Price ($)</label>
-                    <input 
-                        type="number" 
-                        id="strike-price" 
-                        class="w-full border rounded p-2" 
-                        step="0.01" 
-                        value="1.00" 
-                        oninput="updateEquity()">
-                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium mb-1">Valuation Multiple</label>
+                <select id="multiple" class="w-full border rounded p-2" onchange="calculateEquity()">
+                    <option value="10">10x</option>
+                    <option value="15">15x</option>
+                    <option value="20" selected>20x</option>
+                </select>
             </div>
         </div>
 
-        <!-- Valuations and Dilution Section -->
+        <!-- Output Section -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold mb-4">Company Funding Rounds and Dilution</h3>
-            <div id="funding-rounds-container" class="space-y-4">
-                <!-- Funding Round Template -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Valuation ($M)</label>
-                        <input type="number" class="valuation-input w-full border rounded p-2" value="1000" oninput="updateEquity()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Dilution (%)</label>
-                        <input type="number" class="dilution-input w-full border rounded p-2" value="20" oninput="updateEquity()">
-                    </div>
+            <h2 class="text-xl font-bold mb-4">Projected Valuation & Equity Value</h2>
+            <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="bg-gray-50 p-4 rounded">
+                    <h3 class="font-bold text-lg">Valuation</h3>
+                    <p class="text-2xl font-bold text-green-600">$<span id="valuation">200</span>M</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded">
+                    <h3 class="font-bold text-lg">Your Equity Value</h3>
+                    <p class="text-2xl font-bold text-blue-600">$<span id="equity-value">1.0</span>M</p>
                 </div>
             </div>
-            <!-- Add More Rounds Button -->
-            <button onclick="addFundingRound()" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">
-                Add Funding Round
-            </button>
-        </div>
-
-        <!-- Results Section -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold mb-4">Your Potential Equity Value Over Time</h3>
-            <div class="grid grid-cols-6 gap-4 text-center font-bold">
-                <div>Round</div>
-                <div>Valuation ($M)</div>
-                <div>Equity Value ($)</div>
-                <div>Cost to Exercise ($)</div>
-                <div>Net Gain ($)</div>
-                <div>Ownership (%)</div>
-            </div>
-            <div id="results-container"></div>
+            <p class="text-gray-600 mt-4 text-center">* Based on ARR and selected valuation multiple.</p>
         </div>
     </div>
 
     <script>
-        function formatDollar(value) {
-            return value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        function calculateEquity() {
+            const arr = parseFloat(document.getElementById("arr").value) || 0; // ARR in millions
+            const equity = parseFloat(document.getElementById("equity").value) || 0; // Equity in %
+            const multiple = parseFloat(document.getElementById("multiple").value) || 10; // Valuation multiple
+
+            // Calculate valuation and equity value
+            const valuation = arr * multiple; // Valuation in millions
+            const equityValue = (valuation * (equity / 100)).toFixed(1); // Employee equity value in millions
+
+            // Update the display
+            document.getElementById("valuation").textContent = valuation.toFixed(1);
+            document.getElementById("equity-value").textContent = equityValue;
         }
 
-        function formatAndUpdateShares(id) {
-            const input = document.getElementById(id);
-            const value = input.value.replace(/,/g, "");
-            input.value = formatDollar(Number(value) || 0);
-            updateEquity();
-        }
-
-        function addFundingRound() {
-            const container = document.getElementById('funding-rounds-container');
-            const roundNumber = container.getElementsByClassName('valuation-input').length + 1;
-            const roundTemplate = `
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Valuation ($M)</label>
-                        <input type="number" class="valuation-input w-full border rounded p-2" value="1000" oninput="updateEquity()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Dilution (%)</label>
-                        <input type="number" class="dilution-input w-full border rounded p-2" value="10" oninput="updateEquity()">
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', roundTemplate);
-        }
-
-        function updateEquity() {
-            const initialTotalShares = Number(document.getElementById('total-shares').value.replace(/,/g, ""));
-            const yourOptions = Number(document.getElementById('your-options').value.replace(/,/g, ""));
-            const strikePrice = parseFloat(document.getElementById('strike-price').value) || 0;
-
-            const valuations = Array.from(document.getElementsByClassName('valuation-input')).map(input => Number(input.value) * 1e6);
-            const dilutions = Array.from(document.getElementsByClassName('dilution-input')).map(input => Number(input.value) / 100);
-
-            let totalShares = initialTotalShares;
-            let cumulativeOwnershipPercentage = 1; // Start at 100%
-            const resultsContainer = document.getElementById('results-container');
-            resultsContainer.innerHTML = "";
-
-            valuations.forEach((valuation, index) => {
-                const dilution = dilutions[index] || 0;
-
-                // Adjust total shares outstanding
-                totalShares = totalShares / (1 - dilution);
-
-                // Calculate effective ownership percentage
-                cumulativeOwnershipPercentage *= (1 - dilution);
-                const effectiveOwnership = (yourOptions / totalShares) * 100;
-
-                // Calculate equity value and net gain
-                const equityValue = (yourOptions / totalShares) * valuation;
-                const costToExercise = yourOptions * strikePrice;
-                const netGain = equityValue - costToExercise;
-
-                const resultRow = `
-                    <div class="grid grid-cols-6 gap-4 text-center">
-                        <div>Round ${index + 1}</div>
-                        <div>${(valuation / 1e6).toFixed(1)}M</div>
-                        <div>$${formatDollar(equityValue)}</div>
-                        <div>$${formatDollar(costToExercise)}</div>
-                        <div>$${formatDollar(netGain)}</div>
-                        <div>${effectiveOwnership.toFixed(4)}%</div>
-                    </div>
-                `;
-                resultsContainer.innerHTML += resultRow;
-            });
-        }
-
-        updateEquity();
+        // Initialize calculation
+        calculateEquity();
     </script>
 </body>
 </html>
