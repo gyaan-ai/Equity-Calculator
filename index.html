@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Equity Value Calculator</title>
+    <title>Earnings & Equity Calculator</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
         .center-content {
@@ -14,16 +14,57 @@
     </style>
 </head>
 <body class="bg-gray-100 p-6">
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-6xl mx-auto space-y-6">
         <!-- Header Section -->
         <div class="bg-white rounded-lg shadow p-6 center-content">
-            <h1 class="text-2xl font-bold">Equity Value Calculator</h1>
-            <p class="text-gray-600 mt-2">See the potential value of your equity based on ARR milestones and valuation multiples.</p>
+            <h1 class="text-2xl font-bold">Earnings & Equity Calculator</h1>
+            <p class="text-gray-600 mt-2">Explore your earnings potential and see how ARR milestones impact your equity value.</p>
         </div>
 
-        <!-- Input Section -->
+        <!-- Earnings Calculator Section -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-xl font-bold mb-4">Input Your Details</h2>
+            <h2 class="text-xl font-bold mb-4">Earnings Calculator & ACV Goals</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Annual Bookings Target ($)</label>
+                    <input type="text" id="annual-target" class="w-full border rounded p-2" value="1,500,000" oninput="formatAndUpdate('annual-target')">
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Include Q1 Ramp</label>
+                        <input type="checkbox" id="q1-ramp" checked onclick="updateAll()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Include CS Bonus</label>
+                        <input type="checkbox" id="cs-bonus" checked onclick="updateAll()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quarterly Goals -->
+            <div class="mt-4">
+                <h3 class="text-lg font-bold mb-2">Quarterly ACV Goals</h3>
+                <div class="grid grid-cols-4 gap-4 text-center font-bold">
+                    <div class="center-grid">Quarter</div>
+                    <div class="center-grid">Goal</div>
+                    <div class="center-grid">Actual</div>
+                    <div class="center-grid">Commissions</div>
+                </div>
+                <div class="grid grid-cols-4 gap-4 items-center">
+                    <div class="center-grid">Q2</div>
+                    <div class="center-grid">$<span id="q2-goal">125,000</span></div>
+                    <div>
+                        <input type="text" id="q2-acv" class="w-full border rounded p-2 text-center" placeholder="ACV ($)" oninput="formatAndUpdate('q2-acv')">
+                    </div>
+                    <div class="center-grid">$<span id="q2-comm">0</span></div>
+                </div>
+                <!-- Additional quarters omitted for brevity -->
+            </div>
+        </div>
+
+        <!-- Equity Calculator Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4">Equity Value Calculator</h2>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Annual Recurring Revenue (ARR) ($M)</label>
@@ -62,6 +103,10 @@
     </div>
 
     <script>
+        function formatDollar(value) {
+            return value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
         function calculateEquity() {
             const arr = parseFloat(document.getElementById("arr").value) || 0; // ARR in millions
             const equity = parseFloat(document.getElementById("equity").value) || 0; // Equity in %
@@ -76,7 +121,13 @@
             document.getElementById("equity-value").textContent = equityValue;
         }
 
-        // Initialize calculation
+        function formatAndUpdate(id) {
+            const input = document.getElementById(id);
+            const value = input.value.replace(/,/g, "");
+            input.value = formatDollar(Number(value) || 0);
+        }
+
+        // Initialize both calculators
         calculateEquity();
     </script>
 </body>
