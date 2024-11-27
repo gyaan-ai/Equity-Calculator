@@ -18,7 +18,7 @@
         <!-- Header -->
         <div class="bg-white rounded-lg shadow p-6 center-content">
             <h2 class="text-xl font-bold mb-4">Equity Value Calculator</h2>
-            <p class="text-sm text-gray-600">Estimate your equity value based on company valuations, dilution, and ownership percentage.</p>
+            <p class="text-sm text-gray-600">Estimate your equity value based on company valuations, dilution, and ARR growth.</p>
         </div>
 
         <!-- Input Section -->
@@ -49,10 +49,10 @@
 
         <!-- Valuations and Dilution Section -->
         <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-bold mb-4">Company Funding Rounds and Dilution</h3>
+            <h3 class="text-lg font-bold mb-4">Company Funding Rounds and ARR</h3>
             <div id="funding-rounds-container" class="space-y-4">
                 <!-- Funding Round Template -->
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-1">Valuation ($M)</label>
                         <input type="number" class="valuation-input w-full border rounded p-2" value="25" oninput="updateEquity()">
@@ -60,6 +60,10 @@
                     <div>
                         <label class="block text-sm font-medium mb-1">Dilution (%)</label>
                         <input type="number" class="dilution-input w-full border rounded p-2" value="0" oninput="updateEquity()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">ARR ($M)</label>
+                        <input type="number" class="arr-input w-full border rounded p-2" value="1.25" oninput="updateEquity()">
                     </div>
                 </div>
             </div>
@@ -87,6 +91,15 @@
     <script>
         const totalSharesOutstanding = 29560000; // Fixed total shares outstanding
 
+        // Default funding round data
+        const fundingRounds = [
+            { valuation: 25, dilution: 0, arr: 1.25 },
+            { valuation: 75, dilution: 20, arr: 3.75 },
+            { valuation: 150, dilution: 20, arr: 7.5 },
+            { valuation: 300, dilution: 20, arr: 15.0 },
+            { valuation: 600, dilution: 20, arr: 30.0 },
+        ];
+
         function formatDollar(value) {
             return value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
@@ -100,16 +113,24 @@
 
         function addFundingRound() {
             const container = document.getElementById('funding-rounds-container');
-            const roundNumber = container.getElementsByClassName('valuation-input').length + 1;
+            const roundNumber = container.getElementsByClassName('valuation-input').length;
+
+            // Get default data for the round
+            const roundData = fundingRounds[roundNumber] || { valuation: 0, dilution: 0, arr: 0 };
+
             const roundTemplate = `
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium mb-1">Valuation ($M)</label>
-                        <input type="number" class="valuation-input w-full border rounded p-2" value="25" oninput="updateEquity()">
+                        <input type="number" class="valuation-input w-full border rounded p-2" value="${roundData.valuation}" oninput="updateEquity()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Dilution (%)</label>
-                        <input type="number" class="dilution-input w-full border rounded p-2" value="0" oninput="updateEquity()">
+                        <input type="number" class="dilution-input w-full border rounded p-2" value="${roundData.dilution}" oninput="updateEquity()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">ARR ($M)</label>
+                        <input type="number" class="arr-input w-full border rounded p-2" value="${roundData.arr}" oninput="updateEquity()">
                     </div>
                 </div>`;
             container.insertAdjacentHTML('beforeend', roundTemplate);
@@ -152,7 +173,8 @@
             });
         }
 
-        updateEquity();
+        // Initialize with the first round pre-filled
+        addFundingRound();
     </script>
 </body>
 </html>
